@@ -16,7 +16,7 @@ CORS(app)
 BASE_DIR = "/content"
 
 # Hugging Face token
-hf_token = "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"
+hf_token = "hf_**************"
 
 # Check if GPU is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
