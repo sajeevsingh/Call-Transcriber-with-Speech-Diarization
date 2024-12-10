@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Diarization Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Your Audio File</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" accept="audio/*" required>
+            <br><br>
+            <button type="submit">Upload and Process</button>
+        </form>
+        <div id="response" style="margin-top: 20px;"></div>
+    </div>
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("Please select a file to upload.");
+                return;
+            }
+            formData.append("file", fileInput.files[0]);
+
+            const responseDiv = document.getElementById("response");
+            responseDiv.innerHTML = "Processing your file, please wait...";
+
+            try {
+                const response = await fetch(`${location.origin}/upload`, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                // Create table
+                let tableHtml = `
+                    <table>
+                        <tr>
+                            <th>Speaker</th>
+                            <th>Text</th>
+                        </tr>`;
+                result.transcription.forEach(row => {
+                    tableHtml += `
+                        <tr>
+                            <td>${row.speaker}</td>
+                            <td>${row.text}</td>
+                        </tr>`;
+                });
+                tableHtml += "</table>";
+
+                // Display table
+                responseDiv.innerHTML = tableHtml;
+            } catch (error) {
+                responseDiv.innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
+                console.error("Error during file upload:", error);
+            }
+        });
+    </script>
+</body>
+</html>
