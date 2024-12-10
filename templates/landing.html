@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Diarization App</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- Blurred Background -->
+    <div class="blurred-background"></div>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <h1>Speech Diarization App</h1>
+        <p>Experience cutting-edge audio analysis to separate speakers and transcribe audio seamlessly.</p>
+        <a href="/upload" class="cta-button">Try Now</a>
+    </header>
+
+    <!-- Slider Section -->
+    <section class="slider-container">
+        <div class="slider" id="slider">
+            <div class="slider-item">
+                <img src="/static/images/image.jpg" alt="Speech Diarization Graphic 1">
+            </div>
+            <div class="slider-item">
+                <img src="/static/images/image2.jpg" alt="Speech Diarization Graphic 2">
+            </div>
+        </div>
+        <div class="slider-arrows">
+            <div class="slider-arrow" id="prev">&#10094;</div>
+            <div class="slider-arrow" id="next">&#10095;</div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <h2>Why Choose Us?</h2>
+        <div class="features">
+            <div class="feature-item">
+                <h3>Speaker Identification</h3>
+                <p>Accurately identify speakers in your audio files for clear communication.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Real-Time Transcription</h3>
+                <p>Generate text from speech with unmatched precision and speed.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Easy to Use</h3>
+                <p>A simple, user-friendly interface for seamless audio processing.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call-to-Action Section -->
+    <section class="cta-section">
+        <h2>Ready to Explore?</h2>
+        <a href="/upload" class="cta-button">Get Started</a>
+    </section>
+
+    <script>
+        // JavaScript for Slider
+        const slider = document.getElementById('slider');
+        const slides = slider.children;
+        const prev = document.getElementById('prev');
+        const next = document.getElementById('next');
+        let index = 0;
+
+        function updateSlider() {
+            slider.style.transform = `translateX(-${index * 100}%)`;
+        }
+
+        prev.addEventListener('click', () => {
+            index = (index - 1 + slides.length) % slides.length;
+            updateSlider();
+        });
+
+        next.addEventListener('click', () => {
+            index = (index + 1) % slides.length;
+            updateSlider();
+        });
+    </script>
+</body>
+</html>

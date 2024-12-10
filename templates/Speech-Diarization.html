@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Diarization</title>
+    <link rel="stylesheet" href="/static/css/speech-diarization.css">
+</head>
+<body>
+    <div class="upload-container">
+        <h1>Speech Diarization</h1>
+        <p>Upload your audio file to identify speakers and generate transcription.</p>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="fileInput" class="upload-label">
+                <input type="file" id="fileInput" name="file" accept="audio/*" hidden>
+                <span class="upload-button">Choose File</span>
+            </label>
+            <div class="file-name" id="fileName">No file chosen...</div>
+            <br><br>
+            <button type="submit" class="cta-button">Upload and Process</button>
+        </form>
+
+        <div id="response" class="response-message"></div>
+    </div>
+
+    <script>
+        // Display chosen file name
+        const fileInput = document.getElementById("fileInput");
+        const fileNameDisplay = document.getElementById("fileName");
+
+        fileInput.addEventListener("change", () => {
+            fileNameDisplay.textContent = fileInput.files.length > 0
+                ? fileInput.files[0].name
+                : "No file chosen...";
+        });
+
+        // Handle form submission and file upload
+        document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const responseDiv = document.getElementById("response");
+            responseDiv.innerHTML = "<div class='spinner'></div><p>Processing your file...</p>";
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            try {
+                // Send the file to the backend
+                const response = await fetch("/process", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to process the file. Please try again.");
+                }
+
+                const result = await response.json();
+
+                if (result.error) {
+                    responseDiv.innerHTML = `<p style="color: red;">${result.error}</p>`;
+                    return;
+                }
+
+                // Create and display the transcription table
+                const transcription = result.transcription;
+                let tableHTML = `
+                    <p style="color: green;">Upload successful! Your transcription will appear here.</p>
+                    <table>
+                        <tr><th>Speaker</th><th>Text</th></tr>`;
+                transcription.forEach(row => {
+                    tableHTML += `<tr><td>${row.speaker}</td><td>${row.text}</td></tr>`;
+                });
+                tableHTML += `</table>`;
+
+                responseDiv.innerHTML = tableHTML;
+            } catch (error) {
+                console.error("Error:", error);
+                responseDiv.innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

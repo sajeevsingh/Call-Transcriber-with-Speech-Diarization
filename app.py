@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 from pyngrok import ngrok
 from pyannote.audio import Pipeline
@@ -9,14 +9,14 @@ import os
 import torch
 
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, template_folder='/content/templates', static_folder='/content/static')
 CORS(app)
 
 # Base directory
 BASE_DIR = "/content"
 
 # Hugging Face token
-hf_token = "hf_*************************"
+hf_token = "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"
 
 # Check if GPU is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -39,20 +39,27 @@ try:
 except Exception as e:
     print(f"Error loading Whisper model: {str(e)}")
 
+# Landing page route
 @app.route("/")
 def index():
-    # Serve the HTML file located in the base directory
-    return send_from_directory(BASE_DIR, "Speech-Diarization.html")
+    return render_template("landing.html")
 
-@app.route("/upload", methods=["POST"])
-def upload_file():
+# Speech diarization page route
+@app.route("/upload")
+def upload():
+    return render_template("Speech-Diarization.html")
+
+# Upload endpoint for processing files
+@app.route("/process", methods=["POST"])
+def process_file():
     try:
-        # Save uploaded file
+        # Get uploaded file
         file = request.files.get("file")
         if not file:
             print("No file received.")
             return jsonify({"error": "No file uploaded"}), 400
 
+        # Save uploaded file
         uploaded_file_path = os.path.join(BASE_DIR, "uploaded.mp3")
         file.save(uploaded_file_path)
         print(f"File saved at {uploaded_file_path}")
@@ -68,6 +75,7 @@ def upload_file():
         diarization_array = []
         for turn, _, speaker in diarization.itertracks(yield_label=True):
             diarization_array.append([turn.start, turn.end, speaker])
+        print("Step-1 done")
 
         # Compress diarization segments
         compressed_diarization = []
@@ -83,6 +91,7 @@ def upload_file():
         # Step 3: Perform transcription
         result = whisper_model.transcribe(processed_audio_path)
         transcription_segments = result["segments"]
+        print("Transcription Done")
 
         # Step 4: Align transcription with diarization
         aligned_data = []
@@ -102,7 +111,7 @@ def upload_file():
         return jsonify({"transcription": aligned_data})
 
     except Exception as e:
-        print(f"Error during upload: {str(e)}")
+        print(f"Error during processing: {str(e)}")
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == "__main__":
